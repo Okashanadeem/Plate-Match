@@ -12,6 +12,7 @@ export interface CorrectionEntry {
 export interface ImageRecord {
   id: string;
   originalFilename: string;
+  originalExtension: string; // The .jpg, .png part
   currentFilename: string;
   fileHandle: FileSystemFileHandle;
   format: string;

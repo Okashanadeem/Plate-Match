@@ -59,7 +59,8 @@ export const useExportDataset = () => {
         if (!folder) continue;
 
         const file = await img.fileHandle.getFile();
-        const filename = img.status === 'Corrected' ? img.currentFilename : img.originalFilename;
+        const baseFilename = img.status === 'Corrected' ? img.currentFilename : img.originalFilename;
+        const filename = `${baseFilename}${img.originalExtension}`;
         
         folder.file(filename, file);
         

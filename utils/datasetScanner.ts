@@ -21,10 +21,15 @@ export const scanDirectory = async (
       const fileHandle = entry as FileSystemFileHandle;
       const file = await fileHandle.getFile();
       
+      const lastDotIndex = fileHandle.name.lastIndexOf('.');
+      const baseName = lastDotIndex !== -1 ? fileHandle.name.substring(0, lastDotIndex) : fileHandle.name;
+      const extension = lastDotIndex !== -1 ? fileHandle.name.substring(lastDotIndex) : '';
+      
       const record: ImageRecord = {
         id: crypto.randomUUID(),
-        originalFilename: fileHandle.name,
-        currentFilename: fileHandle.name,
+        originalFilename: baseName,
+        originalExtension: extension,
+        currentFilename: baseName,
         fileHandle: fileHandle,
         format: file.type.split('/')[1] || 'unknown',
         status: 'Pending',

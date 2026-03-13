@@ -178,6 +178,7 @@ export const FileInfoPanel: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             <ActionButton 
               label="Approve" 
+              shortcut="W"
               icon={<Check className="w-3.5 h-3.5" />}
               onClick={onApprove}
               disabled={!currentImage || isEditing}
@@ -185,6 +186,7 @@ export const FileInfoPanel: React.FC = () => {
             />
             <ActionButton 
               label="Unclear" 
+              shortcut="U"
               icon={<EyeOff className="w-3.5 h-3.5" />}
               onClick={onUnclear}
               disabled={!currentImage || isEditing}
@@ -192,6 +194,7 @@ export const FileInfoPanel: React.FC = () => {
             />
             <ActionButton 
               label="Reject" 
+              shortcut="R"
               icon={<X className="w-3.5 h-3.5" />}
               onClick={onReject}
               disabled={!currentImage || isEditing}
@@ -199,6 +202,7 @@ export const FileInfoPanel: React.FC = () => {
             />
             <ActionButton 
               label="Rename" 
+              shortcut="E"
               icon={<AlertTriangle className="w-3.5 h-3.5" />}
               onClick={() => setEditing(true)}
               disabled={!currentImage || isEditing}
@@ -250,14 +254,17 @@ const MetadataItem: React.FC<{ label: string; value: string; icon: React.ReactNo
   </div>
 );
 
-const ActionButton: React.FC<{ label: string; icon: React.ReactNode; color: string; onClick: () => void; disabled: boolean }> = ({ label, icon, color, onClick, disabled }) => (
+const ActionButton: React.FC<{ label: string; shortcut: string; icon: React.ReactNode; color: string; onClick: () => void; disabled: boolean }> = ({ label, shortcut, icon, color, onClick, disabled }) => (
   <button 
     onClick={onClick}
     disabled={disabled}
-    className={`h-11 bg-neutral-800/20 border rounded-xl flex flex-col items-center justify-center gap-1 transition-all active:scale-95 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed ${color}`}
+    className={`h-11 bg-neutral-800/20 border rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed ${color}`}
   >
-    {icon}
-    <span className="text-[9px] font-bold uppercase tracking-widest">{label}</span>
+    <div className="flex items-center gap-1.5">
+      {icon}
+      <span className="text-[9px] font-bold uppercase tracking-widest">{label}</span>
+    </div>
+    <span className="text-[8px] font-mono opacity-60">[{shortcut}]</span>
   </button>
 );
 
