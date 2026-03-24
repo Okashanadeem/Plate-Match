@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FileText, Edit3, Hash, Info, History, Check, X, AlertTriangle, EyeOff, Cpu, CheckCircle, XCircle } from "lucide-react";
+import { FileText, Edit3, Hash, Info, History, Check, X, AlertTriangle, EyeOff, Cpu, CheckCircle, XCircle, Copy } from "lucide-react";
 import { useDatasetStore, ImageRecord } from "@/store/useDatasetStore";
 import { useAnnotationActions } from "@/hooks/useAnnotationActions";
 import { ShortcutLegend } from "./ShortcutLegend";
@@ -12,6 +12,7 @@ export const FileInfoPanel: React.FC = () => {
   const { onApprove, onUnclear, onReject, onRename } = useAnnotationActions();
   
   const [workingFilename, setWorkingFilename] = useState("");
+  const [copied, setCopied] = useState(false);
 
   // Sync working filename when current image changes
   useEffect(() => {
@@ -27,6 +28,14 @@ export const FileInfoPanel: React.FC = () => {
     if (!workingFilename.trim()) return;
     onRename(workingFilename);
     setEditing(false);
+  };
+
+  const handleCopyOCR = () => {
+    if (currentImage?.ocrResult) {
+      navigator.clipboard.writeText(currentImage.ocrResult);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -87,8 +96,14 @@ export const FileInfoPanel: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-sm text-neutral-100 font-mono break-all leading-relaxed min-h-[48px] flex items-center">
+              <div 
+                onClick={() => currentImage && setEditing(true)}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-sm text-neutral-100 font-mono break-all leading-relaxed min-h-[48px] flex items-center cursor-pointer hover:border-blue-500/30 hover:bg-neutral-900 transition-all group"
+              >
                 {currentImage?.currentFilename || "Pending dataset selection..."}
+                {currentImage && (
+                  <Edit3 className="w-3 h-3 ml-auto text-neutral-700 group-hover:text-blue-500 transition-colors" />
+                )}
               </div>
             )}
           </div>
@@ -143,9 +158,31 @@ export const FileInfoPanel: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-lg font-mono font-bold text-white tracking-wider">
-                    {currentImage.ocrResult}
-                  </p>
+                  <div className="flex items-center justify-between group">
+                    <p className="text-lg font-mono font-bold text-white tracking-wider">
+                      {currentImage.ocrResult}
+                    </p>
+                    <button 
+                      onClick={handleCopyOCR}
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold transition-all border ${
+                        copied 
+                          ? 'bg-green-500/20 border-green-500/50 text-green-500' 
+                          : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500'
+                      }`}
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-3 h-3" />
+                          COPIED
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          COPY [S]
+                        </>
+                      )}
+                    </button>
+                  </div>
                   
                   {(currentImage.ocrMatchStatus === 'Mismatch' || currentImage.ocrMatchStatus === 'Uncertain') && (
                     <button 

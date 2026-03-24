@@ -42,6 +42,14 @@ export const useKeyboardShortcuts = () => {
           onUnclear();
           break;
         case "s":
+          // ONLY Copy OCR Result
+          const currentImg = useDatasetStore.getState().images[useDatasetStore.getState().currentIndex];
+          if (currentImg?.ocrResult) {
+            navigator.clipboard.writeText(currentImg.ocrResult).catch(err => {
+              console.error('Failed to copy text: ', err);
+            });
+          }
+          break;
         case "r":
           onReject();
           break;

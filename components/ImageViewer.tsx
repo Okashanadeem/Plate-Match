@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Image as ImageIcon, Loader2, FolderOpen, AlertCircle, Maximize2, Minimize2, MousePointer2 } from "lucide-react";
+import { Image as ImageIcon, Loader2, FolderOpen, AlertCircle, Minimize2, MousePointer2, Anchor, RotateCcw } from "lucide-react";
 import { useDatasetStore } from "@/store/useDatasetStore";
 import { useDatasetLoader } from "@/hooks/useDatasetLoader";
 import { useImageLoader } from "@/hooks/useImageLoader";
@@ -9,28 +9,28 @@ import { useImageLoader } from "@/hooks/useImageLoader";
 import { NavigationControls } from "./NavigationControls";
 
 export const ImageViewer: React.FC = () => {
-  const { isLoading, loadingProgress, images, currentIndex } = useDatasetStore();
+  const { isLoading, loadingProgress, images, currentIndex, defaultZoom, setDefaultZoom } = useDatasetStore();
   const { loadDirectory } = useDatasetLoader();
   
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(defaultZoom);
   const [transformOrigin, setTransformOrigin] = useState("center");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentImage = images[currentIndex];
   const { imageUrl, error: loadError, loading: isImageLoading } = useImageLoader(currentImage?.id, currentImage?.fileHandle || null);
 
-  // Reset zoom when image changes
+  // Reset zoom to default when image changes
   useEffect(() => {
-    setScale(1);
+    setScale(defaultZoom);
     setTransformOrigin("center");
-  }, [currentIndex]);
+  }, [currentIndex, defaultZoom]);
 
   const handleWheel = (e: React.WheelEvent) => {
     if (!imageUrl) return;
     
     // Zoom sensitivity
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    const newScale = Math.min(Math.max(1, scale + delta), 5); // Max 5x zoom, Min 1x
+    const newScale = Math.min(Math.max(0.5, scale + delta), 10); // Max 10x zoom, Min 0.5x
 
     if (newScale !== scale) {
       // Calculate cursor position relative to the container for centered zooming
@@ -45,8 +45,17 @@ export const ImageViewer: React.FC = () => {
   };
 
   const resetZoom = () => {
+    setScale(defaultZoom);
+    setTransformOrigin("center");
+  };
+
+  const resetToOriginal = () => {
     setScale(1);
     setTransformOrigin("center");
+  };
+
+  const saveAsDefault = () => {
+    setDefaultZoom(scale);
   };
 
   return (
@@ -125,20 +134,37 @@ export const ImageViewer: React.FC = () => {
                    }}
                  />
                  
-                 {/* Zoom Indicator */}
-                 {scale > 1 && (
-                   <div className="absolute bottom-4 right-4 bg-blue-600/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-blue-400/30 flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+                 {/* Zoom Indicator and Controls */}
+                 <div className="absolute bottom-4 right-4 bg-blue-600/80 backdrop-blur-md p-1.5 rounded-xl border border-blue-400/30 flex items-center gap-1 animate-in fade-in zoom-in duration-200">
+                    <div className="flex items-center gap-2 px-2 border-r border-blue-400/30 mr-1">
                       <MousePointer2 className="w-3 h-3 text-white" />
-                      <span className="text-xs font-bold text-white tabular-nums">{Math.round(scale * 100)}%</span>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); resetZoom(); }}
-                        className="ml-2 p-1 hover:bg-white/20 rounded-md transition-colors"
-                        title="Reset Zoom"
-                      >
-                        <Minimize2 className="w-3 h-3 text-white" />
-                      </button>
-                   </div>
-                 )}
+                      <span className="text-xs font-bold text-white tabular-nums min-w-[3rem]">{Math.round(scale * 100)}%</span>
+                    </div>
+
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); saveAsDefault(); }}
+                      className={`p-1.5 rounded-lg transition-colors ${Math.abs(scale - defaultZoom) < 0.01 ? 'bg-blue-400/40 text-white' : 'hover:bg-white/20 text-blue-100'}`}
+                      title="Set as Default Zoom"
+                    >
+                      <Anchor className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); resetZoom(); }}
+                      className="p-1.5 hover:bg-white/20 text-blue-100 rounded-lg transition-colors"
+                      title="Reset to Default"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); resetToOriginal(); }}
+                      className="p-1.5 hover:bg-white/20 text-blue-100 rounded-lg transition-colors"
+                      title="Reset to 100%"
+                    >
+                      <Minimize2 className="w-3.5 h-3.5" />
+                    </button>
+                 </div>
 
                  {/* Filename Overlay */}
                  <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-neutral-800 pointer-events-none">
@@ -156,3 +182,4 @@ export const ImageViewer: React.FC = () => {
     </main>
   );
 };
+

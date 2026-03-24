@@ -9,6 +9,7 @@ export const useDatasetLoader = () => {
   const setLoading = useDatasetStore((state) => state.setLoading);
   const restoreMetadata = useDatasetStore((state) => state.restoreMetadata);
   const setCurrentIndex = useDatasetStore((state) => state.setCurrentIndex);
+  const setDefaultZoom = useDatasetStore((state) => state.setDefaultZoom);
   const resetStore = useDatasetStore((state) => state.reset);
 
   const loadDirectory = useCallback(async () => {
@@ -45,7 +46,11 @@ export const useDatasetLoader = () => {
         try {
           const sessionData = JSON.parse(savedSession);
           if (sessionData.datasetName === directoryHandle.name) {
-            const reviewedCount = sessionData.metadata.filter((m: any) => m.status !== 'Pending').length;
+            if (sessionData.defaultZoom) {
+              setDefaultZoom(sessionData.defaultZoom);
+            }
+
+            const reviewedCount = sessionData.metadata.filter((m: { status: string }) => m.status !== 'Pending').length;
             if (reviewedCount > 0) {
               if (confirm(`Found a saved session for "${directoryHandle.name}" with ${reviewedCount} reviewed images. Would you like to restore your progress?`)) {
                 restoreMetadata(sessionData.metadata);
@@ -67,7 +72,7 @@ export const useDatasetLoader = () => {
       }
       setLoading(false);
     }
-  }, [setDataset, setLoading, restoreMetadata, setCurrentIndex]);
+  }, [setDataset, setLoading, restoreMetadata, setCurrentIndex, setDefaultZoom]);
 
   const reset = useCallback(() => {
     if (confirm("Are you sure you want to reset the current session? All unsaved progress will be lost.")) {

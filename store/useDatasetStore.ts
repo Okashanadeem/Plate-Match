@@ -33,6 +33,7 @@ interface DatasetState {
   loadingProgress: { processed: number; total: number };
   isEditing: boolean;
   showShortcuts: boolean;
+  defaultZoom: number;
 
   // Actions
   setDataset: (name: string, images: ImageRecord[]) => void;
@@ -43,6 +44,7 @@ interface DatasetState {
   setLoading: (loading: boolean, progress?: { processed: number; total: number }) => void;
   setEditing: (isEditing: boolean) => void;
   setShowShortcuts: (show: boolean) => void;
+  setDefaultZoom: (zoom: number) => void;
   nextImage: () => void;
   prevImage: () => void;
   restoreMetadata: (metadata: any[]) => void;
@@ -69,12 +71,15 @@ export const useDatasetStore = create<DatasetState>((set, get) => ({
   loadingProgress: { processed: 0, total: 0 },
   isEditing: false,
   showShortcuts: false,
+  defaultZoom: 1,
 
   setDataset: (name, images) => set({ datasetName: name, images, currentIndex: 0, isLoading: false }),
   
   setCurrentIndex: (index) => set({ currentIndex: index }),
 
   setShowShortcuts: (showShortcuts) => set({ showShortcuts }),
+  
+  setDefaultZoom: (defaultZoom) => set({ defaultZoom }),
   
   updateImageStatus: (id, status, newFilename) => set((state) => ({
     images: state.images.map((img) => {

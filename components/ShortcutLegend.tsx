@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Keyboard, X, MousePointer2, Type, CheckCircle2, AlertCircle, HelpCircle, XCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { Keyboard, X, MousePointer2, Type, CheckCircle2, AlertCircle, HelpCircle, XCircle, ArrowRight, ArrowLeft, Copy } from "lucide-react";
 import { useDatasetStore } from "@/store/useDatasetStore";
 
 export const ShortcutLegend: React.FC = () => {
@@ -46,7 +46,8 @@ export const ShortcutLegend: React.FC = () => {
               <div className="space-y-3">
                 <ShortcutRow icon={<CheckCircle2 className="text-green-500" />} label="Approve Image" keys={["W", "Enter"]} />
                 <ShortcutRow icon={<HelpCircle className="text-amber-500" />} label="Mark as Unclear" keys={["U"]} />
-                <ShortcutRow icon={<XCircle className="text-red-500" />} label="Reject Image" keys={["S", "R"]} />
+                <ShortcutRow icon={<Copy className="text-blue-400" />} label="Copy OCR Result" keys={["S"]} />
+                <ShortcutRow icon={<XCircle className="text-red-500" />} label="Reject Image" keys={["R"]} />
                 <ShortcutRow icon={<Type className="text-blue-500" />} label="Quick Rename" keys={["E", "F2"]} />
               </div>
             </div>
@@ -62,6 +63,18 @@ export const ShortcutLegend: React.FC = () => {
                 <ShortcutRow icon={<ArrowLeft className="text-neutral-300" />} label="Previous Image" keys={["A", "←"]} />
                 <ShortcutRow icon={<Keyboard className="text-neutral-300" />} label="Open This Help" keys={["F1"]} />
                 <ShortcutRow icon={<MousePointer2 className="text-neutral-300" />} label="Close Modal" keys={["Esc"]} />
+              </div>
+            </div>
+
+            {/* Mouse Interaction Group */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-neutral-400 mb-2">
+                <MousePointer2 className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Mouse Interaction</span>
+              </div>
+              <div className="space-y-3">
+                <ShortcutRow icon={<MousePointer2 className="text-neutral-300" />} label="Zoom In/Out" keys={["Wheel"]} />
+                <ShortcutRow icon={<MousePointer2 className="text-neutral-300" />} label="Reset to Default Zoom" keys={["Double Click"]} />
               </div>
             </div>
           </div>

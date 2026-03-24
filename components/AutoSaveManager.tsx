@@ -6,7 +6,7 @@ import { useDatasetStore } from "@/store/useDatasetStore";
 const STORAGE_KEY = "platematch_session";
 
 export const AutoSaveManager: React.FC = () => {
-  const { datasetName, images, currentIndex } = useDatasetStore();
+  const { datasetName, images, currentIndex, defaultZoom } = useDatasetStore();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -27,6 +27,7 @@ export const AutoSaveManager: React.FC = () => {
       const sessionData = {
         datasetName,
         currentIndex,
+        defaultZoom,
         metadata,
         lastSaved: Date.now(),
       };
@@ -42,7 +43,7 @@ export const AutoSaveManager: React.FC = () => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [datasetName, images, currentIndex]);
+  }, [datasetName, images, currentIndex, defaultZoom]);
 
   return null; // Renderless component
 };
