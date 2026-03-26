@@ -7,7 +7,7 @@ import { useAnnotationActions } from "@/hooks/useAnnotationActions";
 import { ShortcutLegend } from "./ShortcutLegend";
 
 export const FileInfoPanel: React.FC = () => {
-  const { images, currentIndex, isEditing, setEditing } = useDatasetStore();
+  const { images, currentIndex, isEditing, setEditing, pattern, getExtractedPlate } = useDatasetStore();
   const currentImage = images[currentIndex];
   const { onApprove, onUnclear, onReject, onRename } = useAnnotationActions();
   
@@ -17,15 +17,21 @@ export const FileInfoPanel: React.FC = () => {
   // Sync working filename when current image changes
   useEffect(() => {
     if (currentImage) {
-      setWorkingFilename(currentImage.currentFilename);
+      // If pattern is active, we show the extracted plate text instead of full filename
+      const displayValue = pattern.isActive 
+        ? getExtractedPlate(currentImage.currentFilename)
+        : currentImage.currentFilename;
+        
+      setWorkingFilename(displayValue);
       setEditing(false);
     } else {
       setWorkingFilename("");
     }
-  }, [currentImage, setEditing]);
+  }, [currentImage, setEditing, pattern, getExtractedPlate]);
 
   const handleRenameSubmit = () => {
     if (!workingFilename.trim()) return;
+    // onRename will pass this to updateImageStatus which handles reconstruction
     onRename(workingFilename);
     setEditing(false);
   };
@@ -100,7 +106,7 @@ export const FileInfoPanel: React.FC = () => {
                 onClick={() => currentImage && setEditing(true)}
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-sm text-neutral-100 font-mono break-all leading-relaxed min-h-[48px] flex items-center cursor-pointer hover:border-blue-500/30 hover:bg-neutral-900 transition-all group"
               >
-                {currentImage?.currentFilename || "Pending dataset selection..."}
+                {workingFilename || "Pending dataset selection..."}
                 {currentImage && (
                   <Edit3 className="w-3 h-3 ml-auto text-neutral-700 group-hover:text-blue-500 transition-colors" />
                 )}

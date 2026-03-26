@@ -3,70 +3,70 @@ import JSZip from "jszip";
 import { useDatasetStore } from "@/store/useDatasetStore";
 
 export const useExportDataset = () => {
-  const { datasetName, images, getStats } = useDatasetStore();
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportProgress, setExportProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+    const { datasetName, images, getStats, pattern, getExtractedPlate } = useDatasetStore();
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportProgress, setExportProgress] = useState(0);
+    const [error, setError] = useState<string | null>(null);
 
-  const exportDataset = useCallback(async () => {
-    if (!datasetName || images.length === 0) return;
+    const exportDataset = useCallback(async () => {
+      if (!datasetName || images.length === 0) return;
 
-    const stats = getStats();
-    if (stats.reviewed === 0) {
-      alert("No reviewed images to export. Please annotate some images first.");
-      return;
-    }
-
-    if (stats.pending > 0) {
-      if (!confirm(`${stats.pending} images are still pending and will be excluded from the export. Continue?`)) {
+      const stats = getStats();
+      if (stats.reviewed === 0) {
+        alert("No reviewed images to export. Please annotate some images first.");
         return;
       }
-    }
 
-    setIsExporting(true);
-    setExportProgress(0);
-    setError(null);
-
-    try {
-      const zip = new JSZip();
-      const root = zip.folder("dataset");
-      if (!root) throw new Error("Failed to create zip structure");
-
-      const folders = {
-        Valid: root.folder("valid"),
-        Corrected: root.folder("corrected"),
-        Unclear: root.folder("unclear"),
-        Rejected: root.folder("rejected"),
-      };
-
-      const exportImages = images.filter(img => img.status !== 'Pending');
-      const totalToExport = exportImages.length;
-      let processed = 0;
-
-      // Validation: Check for duplicate corrected filenames
-      const correctedNames = new Set();
-      for (const img of exportImages) {
-        if (img.status === 'Corrected') {
-          if (correctedNames.has(img.currentFilename)) {
-            throw new Error(`Duplicate corrected filename found: ${img.currentFilename}. Please ensure all corrected names are unique.`);
-          }
-          correctedNames.add(img.currentFilename);
+      if (stats.pending > 0) {
+        if (!confirm(`${stats.pending} images are still pending and will be excluded from the export. Continue?`)) {
+          return;
         }
       }
 
-      for (const img of exportImages) {
-        const folder = folders[img.status as keyof typeof folders];
-        if (!folder) continue;
+      setIsExporting(true);
+      setExportProgress(0);
+      setError(null);
 
-        const file = await img.fileHandle.getFile();
-        const baseFilename = img.status === 'Corrected' ? img.currentFilename : img.originalFilename;
-        const filename = `${baseFilename}${img.originalExtension}`;
-        
-        folder.file(filename, file);
-        
-        processed++;
-        setExportProgress(Math.round((processed / totalToExport) * 100));
-      }
+      try {
+        const zip = new JSZip();
+        const root = zip.folder("dataset");
+        if (!root) throw new Error("Failed to create zip structure");
+
+        const folders = {
+          Valid: root.folder("valid"),
+          Corrected: root.folder("corrected"),
+          Unclear: root.folder("unclear"),
+          Rejected: root.folder("rejected"),
+        };
+
+        const exportImages = images.filter(img => img.status !== 'Pending');
+        const totalToExport = exportImages.length;
+        let processed = 0;
+
+        for (const img of exportImages) {
+          const folder = folders[img.status as keyof typeof folders];
+          if (!folder) continue;
+
+          const file = await img.fileHandle.getFile();
+          
+          // Filename resolution logic
+          let baseFilename = img.currentFilename;
+          
+          if (pattern.isActive) {
+            // If pattern is active, we almost always want just the plate, 
+            // unless the user explicitly unchecked 'exportOnlyPlate' (though we defaulted it to true)
+            if (pattern.exportOnlyPlate) {
+              baseFilename = getExtractedPlate(img.currentFilename);
+            }
+          }
+          
+          const filename = `${baseFilename}${img.originalExtension}`;
+          
+          folder.file(filename, file);
+          
+          processed++;
+          setExportProgress(Math.round((processed / totalToExport) * 100));
+        }
 
       // Add metadata.json
       const metadata = {
